@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FinLog</title>
+</head>
+<body>
+    <h1>FinLog</h1>
+
+    <h2>Resumo</h2>
+    <p id="balance"></p>
+
+    <button onclick="loadTransactions()">Carregar Transações</button>
+
+    <ul id="list"></ul>
+
+    <script src="app.js"></script>
+
+    <h2>Nova Transação</h2>
+
+    <input id="description" placeholder="Descrição" />
+    <input id="amount" type="number" placeholder="Valor" />
+
+    <select id="type">
+        <option value="0">Expense</option>
+        <option value="1">Income</option>
+    </select>
+
+    <button onclick="createTransaction()">Salvar</button>
+</body>
+</html>
