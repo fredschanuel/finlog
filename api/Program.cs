@@ -36,13 +36,25 @@ transactions.MapGet("/", async ([AsParameters] TransactionFilter filter, Transac
     if (filter.EndDate.HasValue)
         query = query.Where(t => t.Date <= filter.EndDate.Value);
 
+    query = filter.SortBy?.ToLower() switch
+    {
+        "date" => filter.Desc
+        ? query.OrderByDescending(t => t.Date)
+        : query.OrderBy(t => t.Date),
+
+        "amount" => filter.Desc
+            ? query.OrderByDescending(t => t.Amount)
+            : query.OrderBy(t => t.Amount),
+
+        _ => query.OrderByDescending(t => t.Date)
+    };
+
+    query = query
+        .Skip((filter.Page - 1) * filter.PageSize)
+        .Take(filter.PageSize);
+
     return Results.Ok(await query.ToListAsync());
 });
-
-transactions.MapGet("/expenses", async (TransactionDb db) =>
-    await db.Transactions
-        .Where(t => t.Type == TransactionType.Expense)
-        .ToListAsync());
 
 transactions.MapGet("/{id}", async (int id, TransactionDb db) =>
     await db.Transactions.FindAsync(id)
@@ -74,7 +86,7 @@ transactions.MapPost("/", async (TransactionDTO dto, TransactionDb db) =>
 {
     if (dto.Amount <= 0)
         return Results.BadRequest("Amount must be greater than zero");
-    
+
     var transaction = new Transaction()
     {
         Amount = dto.Amount,
@@ -83,7 +95,7 @@ transactions.MapPost("/", async (TransactionDTO dto, TransactionDb db) =>
         Type = dto.Type,
         Category = dto.Category
     };
-    
+
     db.Transactions.Add(transaction);
     await db.SaveChangesAsync();
     return Results.Created($"/transactions/{transaction.Id}", transaction);
