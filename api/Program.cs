@@ -20,8 +20,24 @@ app.UseSwaggerUI();
 
 var transactions = app.MapGroup("/transactions");
 
-transactions.MapGet("/", async (TransactionDb db) =>
-    await db.Transactions.ToListAsync());
+transactions.MapGet("/", async ([AsParameters] TransactionFilter filter, TransactionDb db) =>
+{
+    var query = db.Transactions.AsQueryable();
+
+    if (filter.Type.HasValue)
+        query = query.Where(t => t.Type == filter.Type.Value);
+
+    if (!string.IsNullOrEmpty(filter.Category))
+        query = query.Where(t => t.Category == filter.Category);
+
+    if (filter.StartDate.HasValue)
+        query = query.Where(t => t.Date >= filter.StartDate.Value);
+
+    if (filter.EndDate.HasValue)
+        query = query.Where(t => t.Date <= filter.EndDate.Value);
+
+    return Results.Ok(await query.ToListAsync());
+});
 
 transactions.MapGet("/expenses", async (TransactionDb db) =>
     await db.Transactions
