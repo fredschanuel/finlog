@@ -11,6 +11,16 @@
 
     <button onclick="loadTransactions()">Carregar Transações</button>
 
+    <h2>Paginação</h2>
+    <div id="pagination">
+        <button id="prevBtn">Anterior</button>
+        <input id="pageInput" type="number" min="1" value="1" style="width: 50px;" />
+        <input id="pageSizeInput" type="number" min="1" value="10" style="width: 50px;" />
+        <button id="goBtn">Ir</button>
+        <button id="nextBtn">Próxima</button>
+        <span id="pageInfo"></span>
+    </div>
+
     <ul id="list"></ul>
 
     <script src="app.js"></script>
