@@ -36,24 +36,37 @@ transactions.MapGet("/", async ([AsParameters] TransactionFilter filter, Transac
     if (filter.EndDate.HasValue)
         query = query.Where(t => t.Date <= filter.EndDate.Value);
 
+    var desc = filter.Desc ?? false;
+
     query = filter.SortBy?.ToLower() switch
     {
-        "date" => filter.Desc
+        "date" => desc
         ? query.OrderByDescending(t => t.Date)
         : query.OrderBy(t => t.Date),
 
-        "amount" => filter.Desc
+        "amount" => desc
             ? query.OrderByDescending(t => t.Amount)
             : query.OrderBy(t => t.Amount),
 
         _ => query.OrderByDescending(t => t.Date)
     };
 
-    query = query
-        .Skip((filter.Page - 1) * filter.PageSize)
-        .Take(filter.PageSize);
+    var page = filter.Page ?? 1;
+    var pageSize = filter.PageSize ?? 10;
+    var total = await query.CountAsync();
 
-    return Results.Ok(await query.ToListAsync());
+    var data = await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    return Results.Ok(new
+    {
+        data,
+        total,
+        page,
+        pageSize
+    });
 });
 
 transactions.MapGet("/{id}", async (int id, TransactionDb db) =>
